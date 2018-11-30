@@ -21,15 +21,16 @@ RUN apk --update --no-cache add \
     php7-session php7-xml php7-zip php7-zlib \
   && rm -rf /var/cache/apk/* /var/www/* /tmp/*
 
+# md5sum dokuwiki-$DOKUWIKI_VERSION.tar.gz
 ENV DOKUWIKI_VERSION="2018-04-22a" \
-  DOKUWIKI_MD5="18765a29508f96f9882349a304bffc03"
+  DOKUWIKI_MD5="30c41bddf1b1367de76cf6dd4c3d60e5"
 
 RUN apk --update --no-cache add -t build-dependencies \
     gnupg wget \
   && cd /tmp \
-  && wget -q "https://download.dokuwiki.org/src/dokuwiki/dokuwiki-$DOKUWIKI_VERSION.tgz" \
-  && echo "$DOKUWIKI_MD5  /tmp/dokuwiki-$DOKUWIKI_VERSION.tgz" | md5sum -c - | grep OK \
-  && tar -xzf "dokuwiki-$DOKUWIKI_VERSION.tgz" --strip 1 -C /var/www \
+  && wget -q "https://github.com/iCivic/dokuwiki/archive/dokuwiki-$DOKUWIKI_VERSION.tar.gz" \
+  && echo "$DOKUWIKI_MD5  /tmp/dokuwiki-$DOKUWIKI_VERSION.tar.gz" | md5sum -c - | grep OK \
+  && tar -zxvf "dokuwiki-$DOKUWIKI_VERSION.tar.gz" --strip 1 -C /var/www \
   && apk del build-dependencies \
   && rm -rf  /root/.gnupg /tmp/* /var/cache/apk/*
 
@@ -46,3 +47,10 @@ VOLUME [ "/data" ]
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
+
+########################################
+#
+# build_date=`date +%Y%m%d`
+# docker build --build-arg BUILD_DATE=$build_date --build-arg VCS_REF=f5bc32f6 --build-arg VERSION=$build_date -t idu/dokuwiki:latest .
+# docker run -it --name alpine-3.8 -d alpine:3.8
+# docker run -d -p 80:80 --name idu-dokuwiki -v $(pwd)/data:/data idu/dokuwiki:latest
